@@ -8,7 +8,7 @@ from models import Model
 from moshi.models import loaders
 from tokenizers.processors import TemplateProcessing
 from transformers import AutoTokenizer
-from watermarking import CSM_1B_GH_WATERMARK, load_watermarker, watermark
+#from watermarking import CSM_1B_GH_WATERMARK, load_watermarker, watermark
 
 
 @dataclass
@@ -52,7 +52,7 @@ class Generator:
         mimi.set_num_codebooks(32)
         self._audio_tokenizer = mimi
 
-        self._watermarker = load_watermarker(device=device)
+        #self._watermarker = load_watermarker(device=device)
 
         self.sample_rate = mimi.sample_rate
         self.device = device
@@ -162,8 +162,8 @@ class Generator:
         # Watermarking ensures transparency, dissuades misuse, and enables traceability.
         # Please be a responsible AI citizen and keep the watermarking in place.
         # If using CSM 1B in another application, use your own private key and keep it secret.
-        audio, wm_sample_rate = watermark(self._watermarker, audio, self.sample_rate, CSM_1B_GH_WATERMARK)
-        audio = torchaudio.functional.resample(audio, orig_freq=wm_sample_rate, new_freq=self.sample_rate)
+        #audio, wm_sample_rate = watermark(self._watermarker, audio, self.sample_rate, CSM_1B_GH_WATERMARK)
+        #audio = torchaudio.functional.resample(audio, orig_freq=wm_sample_rate, new_freq=self.sample_rate)
 
         return audio
 
