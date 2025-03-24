@@ -69,13 +69,18 @@ def _index_causal_mask(mask: torch.Tensor, input_pos: torch.Tensor):
     return r
 
 
-def _multinomial_sample_one_no_sync(probs):  # Does multinomial sampling without a cuda synchronization
+def _multinomial_sample_one_no_sync(probs):
     q = torch.empty_like(probs).exponential_(1)
     return torch.argmax(probs / q, dim=-1, keepdim=True).to(dtype=torch.int)
 
-
-def sample_topk(logits: torch.Tensor, topk: int, temperature: float):
+def sample_topk(logits: torch.Tensor, topk: int, temperature: float, repetition_penalty: float = 1.0, previous_tokens: torch.Tensor = None):
     logits = logits / temperature
+
+    if previous_tokens is not None and repetition_penalty != 1.0:
+        for i in range(logits.size(0)):  # Iterate through batch
+            for token in torch.unique(previous_tokens[i]):
+                if token != 0: # Assuming 0 is padding or a special token we don't penalize.
+                    logits[i, token] /= repetition_penalty
 
     filter_value: float = -float("Inf")
     indices_to_remove = logits < torch.topk(logits, topk)[0][..., -1, None]
