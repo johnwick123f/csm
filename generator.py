@@ -114,6 +114,7 @@ class Generator:
         max_audio_length_ms: float = 90_000,
         temperature: float = 0.9,
         topk: int = 50,
+        repetition_penalty=1.1,
     ) -> torch.Tensor:
         self._model.reset_caches()
 
@@ -144,7 +145,7 @@ class Generator:
             )
 
         for _ in range(max_generation_len):
-            sample = self._model.generate_frame(curr_tokens, curr_tokens_mask, curr_pos, temperature, topk)
+            sample = self._model.generate_frame(curr_tokens, curr_tokens_mask, curr_pos, temperature, topk, repetition_penalty)
             if torch.all(sample == 0):
                 break  # eos
 
