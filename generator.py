@@ -169,7 +169,7 @@ class Generator:
 
 
 def load_csm_1b(device: str = "cuda") -> Generator:
-    model = Model.from_pretrained("thepushkarp/csm-1b-safetensors-fp16")
+    model = Model.from_pretrained("chutesai/csm-1b")
     model.to(device=device, dtype=torch.bfloat16)
 
     generator = Generator(model)
