@@ -141,13 +141,15 @@ class Model(
         input_pos: torch.Tensor,
         temperature: float,
         topk: int,
+        repetition_penalty: float = 1.05,  # Add repetition penalty
     ) -> torch.Tensor:
         """
         Args:
             tokens: (batch_size, seq_len, audio_num_codebooks+1)
             tokens_mask: (batch_size, seq_len, audio_num_codebooks+1)
             input_pos: (batch_size, seq_len) positions for each token
-            mask: (batch_size, seq_len, max_seq_len
+            mask: (batch_size, seq_len, max_seq_len)
+            repetition_penalty: penalty to apply to repeated tokens.
 
         Returns:
             (batch_size, audio_num_codebooks) sampled tokens
@@ -164,7 +166,7 @@ class Model(
 
         last_h = h[:, -1, :]
         c0_logits = self.codebook0_head(last_h)
-        c0_sample = sample_topk(c0_logits, topk, temperature)
+        c0_sample = sample_topk(c0_logits, topk, temperature, repetition_penalty)  # Add repetition penalty
         c0_embed = self._embed_audio(0, c0_sample)
 
         curr_h = torch.cat([last_h.unsqueeze(1), c0_embed], dim=1)
@@ -179,7 +181,7 @@ class Model(
                 dtype=dtype
             )
             ci_logits = torch.mm(decoder_h[:, -1, :], self.audio_head[i - 1])
-            ci_sample = sample_topk(ci_logits, topk, temperature)
+            ci_sample = sample_topk(ci_logits, topk, temperature, repetition_penalty, curr_sample)  # Add repetition penalty and pass current sample
             ci_embed = self._embed_audio(i, ci_sample)
 
             curr_h = ci_embed
@@ -187,6 +189,7 @@ class Model(
             curr_pos = curr_pos[:, -1:] + 1
 
         return curr_sample
+        
 
     def reset_caches(self):
         self.backbone.reset_caches()
